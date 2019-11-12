@@ -1,51 +1,11 @@
-use dns_lookup::{lookup_host, LookupError};
+use dns_lookup::lookup_host;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::error::Error;
-use std::fmt;
-use std::net::{AddrParseError, IpAddr};
+use std::net::IpAddr;
 use std::str::FromStr;
 
-#[derive(Debug)]
-pub enum IpaddrConversionError {
-    LookupError(LookupError),
-    AddrParseError(AddrParseError),
-    IoError(std::io::Error),
-}
-
-impl fmt::Display for IpaddrConversionError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            IpaddrConversionError::LookupError(ref err) => write!(f, "LookupError {:?}", err),
-            IpaddrConversionError::AddrParseError(ref err) => write!(f, "AddrParseError {}", err),
-            IpaddrConversionError::IoError(ref err) => write!(f, "IoError {}", err),
-        }
-    }
-}
-impl Error for IpaddrConversionError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
-}
-
-impl From<LookupError> for IpaddrConversionError {
-    fn from(err: LookupError) -> IpaddrConversionError {
-        IpaddrConversionError::LookupError(err)
-    }
-}
-
-impl From<AddrParseError> for IpaddrConversionError {
-    fn from(err: AddrParseError) -> IpaddrConversionError {
-        IpaddrConversionError::AddrParseError(err)
-    }
-}
-
-impl From<std::io::Error> for IpaddrConversionError {
-    fn from(err: std::io::Error) -> IpaddrConversionError {
-        IpaddrConversionError::IoError(err)
-    }
-}
+pub mod errors;
+pub use errors::IpaddrConversionError;
 
 /// Test if input is an ipaddr v4
 ///
@@ -89,7 +49,7 @@ mod tests {
     }
     #[test]
     fn can_identify_bad_ipv4_addrs() {
-        let result = is_ipaddrv4("fred.barney.will.mork");
+        let result = is_ipaddrv4("fred.barney.will");
         assert_eq!(result, false);
     }
     #[test]
